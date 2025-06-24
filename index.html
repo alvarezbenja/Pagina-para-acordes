@@ -12,7 +12,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       color: #333;
     }
     .container {
@@ -20,14 +20,17 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
+      width: 90%;  /* Ajustamos el ancho */
       max-width: 1000px;
       display: flex;
       justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;  /* Permite que los recuadros se ajusten en pantallas pequeñas */
     }
     h1 {
       text-align: center;
       color: #5f6368;
+      margin-bottom: 10px;
       width: 100%;
     }
     label {
@@ -35,23 +38,11 @@
       margin-bottom: 10px;
       display: block;
     }
-    textarea {
-      width: 100%;
-      height: 200px;
-      font-family: monospace;
-      font-size: 1em;
-      padding: 10px;
-      box-sizing: border-box;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
     .controls {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 20px 0;
+      margin-top: 10px;
     }
     .controls button, .controls span {
       font-size: 1.5em;
@@ -69,8 +60,34 @@
     .controls span {
       font-size: 1.2em;
     }
+    .text-area-wrapper {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+    }
+    .box-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      flex: 1;
+    }
+    textarea {
+      width: 100%;
+      height: 500px; /* Mayor altura para ver los acordes más fácilmente */
+      font-family: monospace;
+      font-size: 1.1em;
+      padding: 10px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      resize: none; /* Desactiva el redimensionamiento */
+    }
     .box {
-      width: 50%;  /* Ajustamos ambos cuadros al 50% */
+      flex: 1; /* Ambos recuadros ocuparán el mismo tamaño disponible */
+      max-width: 50%; /* Máximo 50% del contenedor */
     }
     .box h3 {
       text-align: center;
@@ -81,11 +98,14 @@
 </head>
 <body>
   <div class="container">
-    <div class="left-column">
-      <h1>Transposición de Acordes</h1>
+    <h1>Transposición de Acordes</h1>
+
+    <!-- Cuadro de texto de la izquierda -->
+    <div class="box-wrapper">
       <label for="input">Pega tus acordes (respetamos el formato):</label>
       <textarea id="input" placeholder="Ej: do     sol\nlam    fa#m7"></textarea>
 
+      <!-- Botones debajo del cuadro de acordes de entrada -->
       <div class="controls">
         <button onclick="change(-1)">−</button>
         <span id="step">0</span> semitonos
@@ -94,8 +114,9 @@
       </div>
     </div>
 
-    <div class="right-column">
-      <h3>Resultado Transportado</h3>
+    <!-- Cuadro de texto de la derecha con título -->
+    <div class="box-wrapper">
+      <h3>Resultado:</h3>
       <textarea id="result" readonly></textarea>
     </div>
   </div>
