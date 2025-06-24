@@ -5,63 +5,97 @@
   <title>Transposición de Acordes</title>
   <style>
     body {
-      font-family: sans-serif;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #333;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 1000px;
+      display: flex;
+      justify-content: space-between;
+    }
+    h1 {
+      text-align: center;
+      color: #5f6368;
+      width: 100%;
+    }
+    label {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      display: block;
     }
     textarea {
       width: 100%;
-      height: 150px;
+      height: 200px;
       font-family: monospace;
       font-size: 1em;
       padding: 10px;
       box-sizing: border-box;
       white-space: pre-wrap;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 20px;
     }
     .controls {
       display: flex;
+      justify-content: center;
       align-items: center;
-      margin: 10px 0;
+      margin: 20px 0;
     }
     .controls button, .controls span {
       font-size: 1.5em;
-      margin-right: 10px;
-      padding: 5px 10px;
+      margin: 0 10px;
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .columns {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
+    .controls button:hover {
+      background-color: #45a049;
+    }
+    .controls span {
+      font-size: 1.2em;
     }
     .box {
-      flex: 1;
+      width: 50%;  /* Ajustamos ambos cuadros al 50% */
     }
     .box h3 {
+      text-align: center;
+      color: #333;
       margin-top: 0;
     }
   </style>
 </head>
 <body>
-  <h1>Transposición de Acordes</h1>
+  <div class="container">
+    <div class="left-column">
+      <h1>Transposición de Acordes</h1>
+      <label for="input">Pega tus acordes (respetamos el formato):</label>
+      <textarea id="input" placeholder="Ej: do     sol\nlam    fa#m7"></textarea>
 
-  <label for="input">Pega tus acordes (respetamos el formato):</label>
-  <textarea id="input" placeholder="Ej: do     sol\nlam    fa#m7"></textarea>
-
-  <div class="controls">
-    <button onclick="change(-1)">−</button>
-    <span id="step">0</span> semitonos
-    <button onclick="change(1)">+</button>
-    <button style="margin-left:auto;" onclick="transport()">Transportar</button>
-  </div>
-
-  <div class="columns">
-    <div class="box">
-      <h3>Original</h3>
-      <textarea id="orig" readonly></textarea>
+      <div class="controls">
+        <button onclick="change(-1)">−</button>
+        <span id="step">0</span> semitonos
+        <button onclick="change(1)">+</button>
+        <button onclick="transport()">Transportar</button>
+      </div>
     </div>
-    <div class="box">
-      <h3>Transportado</h3>
+
+    <div class="right-column">
+      <h3>Resultado Transportado</h3>
       <textarea id="result" readonly></textarea>
     </div>
   </div>
@@ -78,19 +112,19 @@
 
     function transport() {
       const inputText = document.getElementById('input').value;
-      document.getElementById('orig').value = inputText;
+      document.getElementById('result').value = getTransportedText(inputText); // Solo mostramos el texto transportado
+    }
 
-      // Expresión regular para detectar acordes con posibles sufijos (m, m7, sus4, etc.)
-      const regex = /\b(do#?|re#?|mi|fa#?|sol#?|la#?|si)([^ \n\r\t]*)/gi;
-
-      const transportado = inputText.replace(regex, (match, base, sufijo) => {
+    function getTransportedText(inputText) {
+      // Expresión regular para detectar acordes con posibles sufijos (m, m7, sus4, etc.) y acordes entre paréntesis
+      const regex = /\b(do#?|re#?|mi|fa#?|sol#?|la#?|si)([^ \n\r\t()]*)(\([^\)]*\))?/gi;
+      
+      return inputText.replace(regex, (match, base, sufijo, paren) => {
         const index = notas.indexOf(base.toLowerCase());
         if (index === -1) return match; // Si no es acorde válido, lo deja igual
         const nuevoIndex = (index + step + notas.length) % notas.length;
-        return notas[nuevoIndex] + sufijo;
+        return notas[nuevoIndex] + sufijo + (paren || ''); // Mantiene el sufijo y el contenido entre paréntesis
       });
-
-      document.getElementById('result').value = transportado;
     }
   </script>
 </body>
