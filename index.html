@@ -139,16 +139,22 @@
   }
 
   function getTransportedText(inputText) {
-    const regex = /\b(do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B)([^ \n\r\t()]*)(\([^\)]*\))?/gi;
+    // Detecta acordes con o sin bajo, con sufijos y paréntesis
+    const regex = /\b((do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B))([^ \n\r\t/()]*)(\/(do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B))?(\([^\)]*\))?/gi;
 
-    return inputText.replace(regex, (match, base, sufijo, paren) => {
-      const isLatina = /^[dD][oO]|^[rR]e|^[mM]i|^fa|^sol|^la|^si/i.test(base);
-      const notas = isLatina ? notasLatinas : notasAmericanas;
-      const baseLower = base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
-      const index = notas.findIndex(n => n.toLowerCase() === baseLower.toLowerCase());
-      if (index === -1) return match;
-      const nuevoIndex = (index + step + notas.length) % notas.length;
-      return notas[nuevoIndex] + sufijo + (paren || '');
+    return inputText.replace(regex, (match, base, _, sufijo, slash, bajo, paren) => {
+      function transp(nota) {
+        const isLatina = /^[dD][oO]|^[rR]e|^[mM]i|^fa|^sol|^la|^si/i.test(nota);
+        const lista = isLatina ? notasLatinas : notasAmericanas;
+        const normalizada = nota.charAt(0).toUpperCase() + nota.slice(1).toLowerCase();
+        const i = lista.findIndex(n => n.toLowerCase() === normalizada.toLowerCase());
+        if (i === -1) return nota;
+        return lista[(i + step + lista.length) % lista.length];
+      }
+
+      const acordeTransp = transp(base) + (sufijo || '');
+      const bajoTransp = slash ? '/' + transp(bajo) : '';
+      return acordeTransp + bajoTransp + (paren || '');
     });
   }
 </script>
