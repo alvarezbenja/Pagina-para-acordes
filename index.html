@@ -123,31 +123,34 @@
   </div>
 
   <script>
-    // Notas en cifrado latino
-    const notas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
-    let step = 0;
+  // Notas en cifrado latino y americano
+  const notasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
+  const notasAmericanas = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  let step = 0;
 
-    function change(delta) {
-      step += delta;
-      document.getElementById('step').textContent = step;
-    }
+  function change(delta) {
+    step += delta;
+    document.getElementById('step').textContent = step;
+  }
 
-    function transport() {
-      const inputText = document.getElementById('input').value;
-      document.getElementById('result').value = getTransportedText(inputText); // Solo mostramos el texto transportado
-    }
+  function transport() {
+    const inputText = document.getElementById('input').value;
+    document.getElementById('result').value = getTransportedText(inputText);
+  }
 
-    function getTransportedText(inputText) {
-      // Expresión regular para detectar acordes con posibles sufijos (m, m7, sus4, etc.) y acordes entre paréntesis
-      const regex = /\b(do#?|re#?|mi|fa#?|sol#?|la#?|si)([^ \n\r\t()]*)(\([^\)]*\))?/gi;
-      
-      return inputText.replace(regex, (match, base, sufijo, paren) => {
-        const index = notas.indexOf(base.toLowerCase());
-        if (index === -1) return match; // Si no es acorde válido, lo deja igual
-        const nuevoIndex = (index + step + notas.length) % notas.length;
-        return notas[nuevoIndex] + sufijo + (paren || ''); // Mantiene el sufijo y el contenido entre paréntesis
-      });
-    }
-  </script>
+  function getTransportedText(inputText) {
+    const regex = /\b(do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B)([^ \n\r\t()]*)(\([^\)]*\))?/gi;
+
+    return inputText.replace(regex, (match, base, sufijo, paren) => {
+      const isLatina = /^[dD][oO]|^[rR]e|^[mM]i|^fa|^sol|^la|^si/i.test(base);
+      const notas = isLatina ? notasLatinas : notasAmericanas;
+      const baseLower = base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
+      const index = notas.findIndex(n => n.toLowerCase() === baseLower.toLowerCase());
+      if (index === -1) return match;
+      const nuevoIndex = (index + step + notas.length) % notas.length;
+      return notas[nuevoIndex] + sufijo + (paren || '');
+    });
+  }
+</script>
 </body>
 </html>
