@@ -2,98 +2,107 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transposición de Acordes</title>
-  <link rel="icon" href="favicon.ico.png" type="image/png">
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       display: flex;
       justify-content: center;
-      align-items: center;
       min-height: 100vh;
       color: #333;
     }
     .container {
       background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 90%;  /* Ajustamos el ancho */
-      max-width: 1000px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 1100px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       gap: 20px;
-      flex-wrap: wrap;  /* Permite que los recuadros se ajusten en pantallas pequeñas */
     }
     h1 {
       text-align: center;
-      color: #5f6368;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-    label {
-      font-size: 1.1em;
-      margin-bottom: 10px;
-      display: block;
+      color: #2c3e50;
+      margin-top: 0;
     }
     .controls {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 10px;
+      gap: 15px;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
     }
-    .controls button, .controls span {
+    .controls button {
       font-size: 1.5em;
-      margin: 0 10px;
-      padding: 8px 15px;
-      background-color: #4CAF50;
+      width: 45px;
+      height: 45px;
+      background-color: #3498db;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .controls button:hover {
-      background-color: #45a049;
+      background-color: #2980b9;
     }
     .controls span {
       font-size: 1.2em;
+      font-weight: bold;
+      min-width: 120px;
+      text-align: center;
     }
     .text-area-wrapper {
       display: flex;
-      justify-content: space-between;
       gap: 20px;
-      width: 100%;
+      flex-wrap: wrap;
     }
-    .box-wrapper {
+    .box {
+      flex: 1;
+      min-width: 280px; /* Asegura que no se aplasten en móviles */
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      flex: 1;
+    }
+    label, h3 {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      color: #555;
+      font-weight: 600;
+      margin-top: 0;
     }
     textarea {
       width: 100%;
-      height: 500px; /* Mayor altura para ver los acordes más fácilmente */
-      font-family: monospace;
+      flex-grow: 1;
+      min-height: 400px;
+      font-family: 'Courier New', Courier, monospace;
       font-size: 1.1em;
-      padding: 10px;
+      padding: 15px;
       box-sizing: border-box;
       white-space: pre-wrap;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      resize: none; /* Desactiva el redimensionamiento */
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      resize: vertical;
+      background-color: #fafafa;
     }
-    .box {
-      flex: 1; /* Ambos recuadros ocuparán el mismo tamaño disponible */
-      max-width: 50%; /* Máximo 50% del contenedor */
+    textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
-    .box h3 {
-      text-align: center;
-      color: #333;
-      margin-top: 0;
+    #result {
+      background-color: #f8f9fa;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -101,62 +110,93 @@
   <div class="container">
     <h1>Transposición de Acordes</h1>
 
-    <!-- Cuadro de texto de la izquierda -->
-    <div class="box-wrapper">
-      <label for="input">Pega tus acordes (respetamos el formato):</label>
-      <textarea id="input" placeholder="Ej: do     sol\nlam    fa#m7"></textarea>
-
-      <!-- Botones debajo del cuadro de acordes de entrada -->
-      <div class="controls">
-        <button onclick="change(-1)">−</button>
-        <span id="step">0</span> semitonos
-        <button onclick="change(1)">+</button>
-        <button onclick="transport()">Transportar</button>
-      </div>
+    <div class="controls">
+      <button onclick="change(-1)">−</button>
+      <span id="step-display">0 semitonos</span>
+      <button onclick="change(1)">+</button>
     </div>
 
-    <!-- Cuadro de texto de la derecha con título -->
-    <div class="box-wrapper">
-      <h3>Resultado:</h3>
-      <textarea id="result" readonly></textarea>
+    <div class="text-area-wrapper">
+      <div class="box">
+        <label for="input">Pega tus acordes:</label>
+        <textarea id="input" placeholder="Ej: do   sol\nlam  fa#m7"></textarea>
+      </div>
+
+      <div class="box">
+        <h3>Resultado:</h3>
+        <textarea id="result" readonly></textarea>
+      </div>
     </div>
   </div>
 
   <script>
-  // Notas en cifrado latino y americano
-  const notasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
-  const notasAmericanas = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  let step = 0;
+    // Se unificó todo en la escala cromática con sostenidos como base matemática
+    const cromaticasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
+    const cromaticasAmericanas = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+    
+    // Diccionario para manejar bemoles (b) y pasarlos a la lógica de sostenidos
+    const flatToSharp = {
+      'reb': 'do#', 'mib': 're#', 'solb': 'fa#', 'lab': 'sol#', 'sib': 'la#',
+      'db': 'c#', 'eb': 'd#', 'gb': 'f#', 'ab': 'g#', 'bb': 'a#'
+    };
 
-  function change(delta) {
-    step += delta;
-    document.getElementById('step').textContent = step;
-  }
+    let step = 0;
+    const inputEl = document.getElementById('input');
+    const resultEl = document.getElementById('result');
+    const stepDisplay = document.getElementById('step-display');
 
-  function transport() {
-    const inputText = document.getElementById('input').value;
-    document.getElementById('result').value = getTransportedText(inputText);
-  }
+    // Reactividad: Escucha los cambios en el teclado automáticamente
+    inputEl.addEventListener('input', transport);
 
-  function getTransportedText(inputText) {
-    // Detecta acordes con o sin bajo, con sufijos y paréntesis
-    const regex = /\b((do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B))([^ \n\r\t/()]*)(\/(do#?|re#?|mi|fa#?|sol#?|la#?|si|C#?|D#?|E|F#?|G#?|A#?|B))?(\([^\)]*\))?/gi;
+    function change(delta) {
+      step += delta;
+      const sign = step > 0 ? '+' : '';
+      stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
+      transport(); // Se actualiza solo al tocar los botones
+    }
 
-    return inputText.replace(regex, (match, base, _, sufijo, slash, bajo, paren) => {
-      function transp(nota) {
-        const isLatina = /^[dD][oO]|^[rR]e|^[mM]i|^fa|^sol|^la|^si/i.test(nota);
-        const lista = isLatina ? notasLatinas : notasAmericanas;
-        const normalizada = nota.charAt(0).toUpperCase() + nota.slice(1).toLowerCase();
-        const i = lista.findIndex(n => n.toLowerCase() === normalizada.toLowerCase());
-        if (i === -1) return nota;
-        return lista[(i + step + lista.length) % lista.length];
-      }
+    function transport() {
+      resultEl.value = getTransportedText(inputEl.value);
+    }
 
-      const acordeTransp = transp(base) + (sufijo || '');
-      const bajoTransp = slash ? '/' + transp(bajo) : '';
-      return acordeTransp + bajoTransp + (paren || '');
-    });
-  }
-</script>
+    function getTransportedText(inputText) {
+      // Regex mejorada: Soporta sostenidos (#) y bemoles (b)
+      const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
+
+      return inputText.replace(regex, (match, base, _, sufijo, slash, bajo, __, paren) => {
+        function transp(nota) {
+          if (!nota) return '';
+          
+          let notaMin = nota.toLowerCase();
+          // Convertir bemol a sostenido para el cálculo si existe
+          if (flatToSharp[notaMin]) {
+            notaMin = flatToSharp[notaMin];
+          }
+
+          const isLatina = /^(do|re|mi|fa|sol|la|si)/.test(notaMin);
+          const lista = isLatina ? cromaticasLatinas : cromaticasAmericanas;
+          
+          const i = lista.indexOf(notaMin);
+          if (i === -1) return nota; // Fallback por si acaso
+
+          // Fórmula matemática robusta para evitar índices negativos
+          const newIndex = (((i + step) % 12) + 12) % 12;
+          let resultado = lista[newIndex];
+
+          // Respetar la capitalización original del usuario (Mayúsculas, Minúsculas, o Título)
+          if (nota === nota.toUpperCase()) {
+            return resultado.toUpperCase();
+          } else if (nota[0] === nota[0].toUpperCase()) {
+            return resultado.charAt(0).toUpperCase() + resultado.slice(1);
+          }
+          return resultado;
+        }
+
+        const acordeTransp = transp(base) + (sufijo || '');
+        const bajoTransp = slash ? '/' + transp(bajo) : '';
+        return acordeTransp + bajoTransp + (paren || '');
+      });
+    }
+  </script>
 </body>
 </html>
