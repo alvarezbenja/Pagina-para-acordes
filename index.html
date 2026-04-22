@@ -114,6 +114,62 @@
       <button onclick="change(-1)">−</button>
       <span id="step-display">0 semitonos</span>
       <button onclick="change(1)">+</button>
+      <div class="controls">
+      <button onclick="change(-1)">−</button>
+      <span id="step-display">0 semitonos</span>
+      <button onclick="change(1)">+</button>
+    </div>
+
+    <div class="controls" style="margin-top: 10px; background-color: #e9ecef;">
+      <button style="width: auto; padding: 0 20px; font-size: 1.1em;" onclick="extraer('acordes')">Solo Acordes</button>
+      <button style="width: auto; padding: 0 20px; font-size: 1.1em; background-color: #e67e22;" onclick="extraer('letra')">Solo Letra</button>
+      <button style="width: auto; padding: 0 20px; font-size: 1.1em; background-color: #95a5a6;" onclick="transport()">Restaurar Todo</button>
+    </div>
+    ```
+
+### 2. Agrega la función de extracción en el JavaScript
+Pega esta nueva función al final de tu etiqueta `<script>`. Lo que hace es recorrer todo lo que pegaste y separar la paja del trigo usando matemáticas simples:
+
+```javascript
+  // Nueva función para separar letra de acordes
+  function extraer(tipo) {
+    const inputText = inputEl.value;
+    const lineas = inputText.split('\n'); // Separamos el texto renglón por renglón
+    const resultado = [];
+
+    // Usamos la misma regex poderosa que ya teníamos
+    const chordRegex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
+
+    lineas.forEach(linea => {
+      const lineaLimpia = linea.trim();
+      
+      // Si es un renglón en blanco, lo conservamos para mantener la estructura visual (párrafos)
+      if (lineaLimpia === '') {
+        resultado.push('');
+        return;
+      }
+
+      // TRUCO: Le quitamos a la línea todos los acordes válidos y todos los espacios.
+      const textoSinAcordes = linea.replace(chordRegex, '').replace(/\s+/g, '');
+      
+      // Calculamos cuánto texto "no-acorde" quedó. 
+      // Si quedó menos del 30% del texto original, asumimos que era una línea de acordes.
+      const longitudOriginalSinEspacios = linea.replace(/\s+/g, '').length;
+      const esLineaDeAcordes = textoSinAcordes.length < (longitudOriginalSinEspacios * 0.3);
+
+      // Filtramos según lo que pidió el usuario
+      if (tipo === 'acordes' && esLineaDeAcordes) {
+        // Transponemos la línea de acordes por si hay semitonos aplicados, y la guardamos
+        resultado.push(getTransportedText(linea));
+      } else if (tipo === 'letra' && !esLineaDeAcordes) {
+        // Guardamos solo la letra pura
+        resultado.push(linea);
+      }
+    });
+
+    // Mostramos el resultado en el cuadro de la derecha
+    resultEl.value = resultado.join('\n');
+  }
     </div>
 
     <div class="text-area-wrapper">
