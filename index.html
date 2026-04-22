@@ -40,6 +40,7 @@
       background-color: #f8f9fa;
       padding: 15px;
       border-radius: 8px;
+      flex-wrap: wrap; /* Ayuda a que no se rompa en pantallas chicas */
     }
     .controls button {
       font-size: 1.5em;
@@ -116,6 +117,7 @@
       height: 1px;
       background: #ddd;
       margin: 10px 0;
+      width: 100%;
     }
   </style>
 </head>
@@ -136,7 +138,7 @@
       </div>
 
       <div class="box">
-        <h3>Canción Transportada:</h3>
+        <h3>Canción Transportada (Unida):</h3>
         <textarea id="result" class="readonly-box" readonly></textarea>
       </div>
     </div>
@@ -144,7 +146,7 @@
     <hr>
 
     <div class="controls">
-      <button class="action-btn" onclick="separarAcordesYLetra()">Separar Letra y Acordes en Columnas ↓</button>
+      <button class="action-btn" onclick="separarAcordesYLetra()">↓ Separar Letra y Acordes en Columnas ↓</button>
     </div>
 
     <div class="text-area-wrapper">
@@ -177,8 +179,12 @@
     const letraEl = document.getElementById('resultado-letra');
     const acordesEl = document.getElementById('resultado-acordes');
 
-    // Se actualiza la transposición general automáticamente al escribir
-    inputEl.addEventListener('input', transport);
+    inputEl.addEventListener('input', () => {
+      transport();
+      if(acordesEl.value !== "") {
+        separarAcordesYLetra();
+      }
+    });
 
     function change(delta) {
       step += delta;
@@ -186,7 +192,6 @@
       stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
       transport();
       
-      // Si el usuario ya había separado las columnas, las actualizamos al cambiar de tono
       if(acordesEl.value !== "") {
           separarAcordesYLetra();
       }
@@ -196,7 +201,6 @@
       resultEl.value = getTransportedText(inputEl.value);
     }
 
-    // La función principal de transposición manteniendo tu regla de mayúsculas
     function getTransportedText(inputText) {
       const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
 
@@ -236,7 +240,6 @@
       });
     }
 
-    // Nueva función para separar en dos cuadros manteniendo la altura de las líneas
     function separarAcordesYLetra() {
       const inputText = inputEl.value;
       const lineas = inputText.split('\n');
@@ -257,15 +260,14 @@
 
         const textoSinAcordes = linea.replace(chordRegex, '').replace(/\s+/g, '');
         const longitudOriginalSinEspacios = linea.replace(/\s+/g, '').length;
-        // La regla del 30% para saber si la línea es de acordes
         const esLineaDeAcordes = textoSinAcordes.length < (longitudOriginalSinEspacios * 0.3);
 
         if (esLineaDeAcordes) {
-          arrLetra.push(''); // Dejamos hueco en la letra
-          arrAcordes.push(getTransportedText(linea)); // Extraemos y transponemos el acorde
+          arrLetra.push(''); 
+          arrAcordes.push(getTransportedText(linea)); 
         } else {
-          arrLetra.push(linea); // Guardamos la letra
-          arrAcordes.push('');  // Dejamos hueco en los acordes
+          arrLetra.push(linea); 
+          arrAcordes.push('');  
         }
       });
 
