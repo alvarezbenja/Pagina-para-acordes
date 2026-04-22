@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transposición de Acordes</title>
+  <title>Transposición y Extracción de Acordes</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,7 +21,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       width: 100%;
-      max-width: 1100px;
+      max-width: 1200px;
       display: flex;
       flex-direction: column;
       gap: 20px;
@@ -30,6 +30,7 @@
       text-align: center;
       color: #2c3e50;
       margin-top: 0;
+      margin-bottom: 5px;
     }
     .controls {
       display: flex;
@@ -54,8 +55,14 @@
       justify-content: center;
       align-items: center;
     }
+    .controls button.action-btn {
+      width: auto;
+      padding: 0 20px;
+      font-size: 1.1em;
+      background-color: #8e44ad;
+    }
     .controls button:hover {
-      background-color: #2980b9;
+      filter: brightness(0.9);
     }
     .controls span {
       font-size: 1.2em;
@@ -70,7 +77,7 @@
     }
     .box {
       flex: 1;
-      min-width: 280px; /* Asegura que no se aplasten en móviles */
+      min-width: 280px;
       display: flex;
       flex-direction: column;
     }
@@ -84,7 +91,7 @@
     textarea {
       width: 100%;
       flex-grow: 1;
-      min-height: 400px;
+      min-height: 300px;
       font-family: 'Courier New', Courier, monospace;
       font-size: 1.1em;
       padding: 15px;
@@ -100,163 +107,171 @@
       border-color: #3498db;
       box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
-    #result {
+    .readonly-box {
       background-color: #f8f9fa;
       cursor: not-allowed;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background: #ddd;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Transposición de Acordes</h1>
+    <h1>Herramienta para Cancionero</h1>
 
     <div class="controls">
       <button onclick="change(-1)">−</button>
       <span id="step-display">0 semitonos</span>
       <button onclick="change(1)">+</button>
-      <div class="controls">
-      <button onclick="change(-1)">−</button>
-      <span id="step-display">0 semitonos</span>
-      <button onclick="change(1)">+</button>
-    </div>
-
-    <div class="controls" style="margin-top: 10px; background-color: #e9ecef;">
-      <button style="width: auto; padding: 0 20px; font-size: 1.1em;" onclick="extraer('acordes')">Solo Acordes</button>
-      <button style="width: auto; padding: 0 20px; font-size: 1.1em; background-color: #e67e22;" onclick="extraer('letra')">Solo Letra</button>
-      <button style="width: auto; padding: 0 20px; font-size: 1.1em; background-color: #95a5a6;" onclick="transport()">Restaurar Todo</button>
-    </div>
-    ```
-
-### 2. Agrega la función de extracción en el JavaScript
-Pega esta nueva función al final de tu etiqueta `<script>`. Lo que hace es recorrer todo lo que pegaste y separar la paja del trigo usando matemáticas simples:
-
-```javascript
-  // Nueva función para separar letra de acordes
-  function extraer(tipo) {
-    const inputText = inputEl.value;
-    const lineas = inputText.split('\n'); // Separamos el texto renglón por renglón
-    const resultado = [];
-
-    // Usamos la misma regex poderosa que ya teníamos
-    const chordRegex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
-
-    lineas.forEach(linea => {
-      const lineaLimpia = linea.trim();
-      
-      // Si es un renglón en blanco, lo conservamos para mantener la estructura visual (párrafos)
-      if (lineaLimpia === '') {
-        resultado.push('');
-        return;
-      }
-
-      // TRUCO: Le quitamos a la línea todos los acordes válidos y todos los espacios.
-      const textoSinAcordes = linea.replace(chordRegex, '').replace(/\s+/g, '');
-      
-      // Calculamos cuánto texto "no-acorde" quedó. 
-      // Si quedó menos del 30% del texto original, asumimos que era una línea de acordes.
-      const longitudOriginalSinEspacios = linea.replace(/\s+/g, '').length;
-      const esLineaDeAcordes = textoSinAcordes.length < (longitudOriginalSinEspacios * 0.3);
-
-      // Filtramos según lo que pidió el usuario
-      if (tipo === 'acordes' && esLineaDeAcordes) {
-        // Transponemos la línea de acordes por si hay semitonos aplicados, y la guardamos
-        resultado.push(getTransportedText(linea));
-      } else if (tipo === 'letra' && !esLineaDeAcordes) {
-        // Guardamos solo la letra pura
-        resultado.push(linea);
-      }
-    });
-
-    // Mostramos el resultado en el cuadro de la derecha
-    resultEl.value = resultado.join('\n');
-  }
     </div>
 
     <div class="text-area-wrapper">
       <div class="box">
-        <label for="input">Pega tus acordes:</label>
-        <textarea id="input" placeholder="Ej: do   sol\nlam  fa#m7"></textarea>
+        <label for="input">Pega tu canción aquí:</label>
+        <textarea id="input" placeholder="Pega aquí la letra con los acordes arriba..."></textarea>
       </div>
 
       <div class="box">
-        <h3>Resultado:</h3>
-        <textarea id="result" readonly></textarea>
+        <h3>Canción Transportada:</h3>
+        <textarea id="result" class="readonly-box" readonly></textarea>
       </div>
     </div>
+
+    <hr>
+
+    <div class="controls">
+      <button class="action-btn" onclick="separarAcordesYLetra()">Separar Letra y Acordes en Columnas ↓</button>
+    </div>
+
+    <div class="text-area-wrapper">
+      <div class="box">
+        <h3 style="color: #e67e22;">Solo Letra:</h3>
+        <textarea id="resultado-letra" class="readonly-box" readonly></textarea>
+      </div>
+
+      <div class="box">
+        <h3 style="color: #27ae60;">Solo Acordes (Sincronizados):</h3>
+        <textarea id="resultado-acordes" class="readonly-box" readonly></textarea>
+      </div>
+    </div>
+
   </div>
 
   <script>
-  // Se unificó todo en la escala cromática con sostenidos como base matemática
-  const cromaticasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
-  const cromaticasAmericanas = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
-  
-  // Diccionario para manejar bemoles (b) y pasarlos a la lógica de sostenidos
-  const flatToSharp = {
-    'reb': 'do#', 'mib': 're#', 'solb': 'fa#', 'lab': 'sol#', 'sib': 'la#',
-    'db': 'c#', 'eb': 'd#', 'gb': 'f#', 'ab': 'g#', 'bb': 'a#'
-  };
+    const cromaticasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
+    const cromaticasAmericanas = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+    
+    const flatToSharp = {
+      'reb': 'do#', 'mib': 're#', 'solb': 'fa#', 'lab': 'sol#', 'sib': 'la#',
+      'db': 'c#', 'eb': 'd#', 'gb': 'f#', 'ab': 'g#', 'bb': 'a#'
+    };
 
-  let step = 0;
-  const inputEl = document.getElementById('input');
-  const resultEl = document.getElementById('result');
-  const stepDisplay = document.getElementById('step-display');
+    let step = 0;
+    const inputEl = document.getElementById('input');
+    const resultEl = document.getElementById('result');
+    const stepDisplay = document.getElementById('step-display');
+    const letraEl = document.getElementById('resultado-letra');
+    const acordesEl = document.getElementById('resultado-acordes');
 
-  inputEl.addEventListener('input', transport);
+    // Se actualiza la transposición general automáticamente al escribir
+    inputEl.addEventListener('input', transport);
 
-  function change(delta) {
-    step += delta;
-    const sign = step > 0 ? '+' : '';
-    stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
-    transport();
-  }
-
-  function transport() {
-    resultEl.value = getTransportedText(inputEl.value);
-  }
-
-  function getTransportedText(inputText) {
-    // La regex ahora agrupa específicamente la "nota pura" (sin # o b) en los grupos 2 y 6
-    const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
-
-    // Usamos los grupos capturados para aislar exactamente qué capitalizó el usuario
-    return inputText.replace(regex, (match, base, notaPura, sufijo, slashGroup, bajo, bajoPura, paren) => {
+    function change(delta) {
+      step += delta;
+      const sign = step > 0 ? '+' : '';
+      stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
+      transport();
       
-      function transp(nota, pura) {
-        if (!nota) return '';
-        
-        let notaMin = nota.toLowerCase();
-        if (flatToSharp[notaMin]) {
-          notaMin = flatToSharp[notaMin];
-        }
-
-        const isLatina = /^(do|re|mi|fa|sol|la|si)/.test(notaMin);
-        const lista = isLatina ? cromaticasLatinas : cromaticasAmericanas;
-        
-        const i = lista.indexOf(notaMin);
-        if (i === -1) return nota; 
-
-        // Cálculo matemático a prueba de números negativos
-        const newIndex = (((i + step) % 12) + 12) % 12;
-        let resultado = lista[newIndex];
-
-        // LÓGICA EXACTA DE CAPITALIZACIÓN BASADA EN LA NOTA PURA
-        const esMayusculaCerrada = pura === pura.toUpperCase();
-        const esTipoTitulo = pura[0] === pura[0].toUpperCase();
-
-        if (esMayusculaCerrada) {
-          return resultado.toUpperCase(); // Ej: DO -> RE, SIB -> LA#
-        } else if (esTipoTitulo) {
-          return resultado.charAt(0).toUpperCase() + resultado.slice(1); // Ej: Do -> Re, Sib -> La#
-        }
-        return resultado; // Ej: do -> re
+      // Si el usuario ya había separado las columnas, las actualizamos al cambiar de tono
+      if(acordesEl.value !== "") {
+          separarAcordesYLetra();
       }
+    }
 
-      // El sufijo (m, maj7, dim, etc) se añade intacto al final del cálculo
-      const acordeTransp = transp(base, notaPura) + (sufijo || '');
-      const bajoTransp = slashGroup ? '/' + transp(bajo, bajoPura) : '';
-      return acordeTransp + bajoTransp + (paren || '');
-    });
-  }
-</script>
+    function transport() {
+      resultEl.value = getTransportedText(inputEl.value);
+    }
+
+    // La función principal de transposición manteniendo tu regla de mayúsculas
+    function getTransportedText(inputText) {
+      const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
+
+      return inputText.replace(regex, (match, base, notaPura, sufijo, slashGroup, bajo, bajoPura, paren) => {
+        
+        function transp(nota, pura) {
+          if (!nota) return '';
+          
+          let notaMin = nota.toLowerCase();
+          if (flatToSharp[notaMin]) {
+            notaMin = flatToSharp[notaMin];
+          }
+
+          const isLatina = /^(do|re|mi|fa|sol|la|si)/.test(notaMin);
+          const lista = isLatina ? cromaticasLatinas : cromaticasAmericanas;
+          
+          const i = lista.indexOf(notaMin);
+          if (i === -1) return nota; 
+
+          const newIndex = (((i + step) % 12) + 12) % 12;
+          let resultado = lista[newIndex];
+
+          const esMayusculaCerrada = pura === pura.toUpperCase();
+          const esTipoTitulo = pura[0] === pura[0].toUpperCase();
+
+          if (esMayusculaCerrada) {
+            return resultado.toUpperCase(); 
+          } else if (esTipoTitulo) {
+            return resultado.charAt(0).toUpperCase() + resultado.slice(1); 
+          }
+          return resultado; 
+        }
+
+        const acordeTransp = transp(base, notaPura) + (sufijo || '');
+        const bajoTransp = slashGroup ? '/' + transp(bajo, bajoPura) : '';
+        return acordeTransp + bajoTransp + (paren || '');
+      });
+    }
+
+    // Nueva función para separar en dos cuadros manteniendo la altura de las líneas
+    function separarAcordesYLetra() {
+      const inputText = inputEl.value;
+      const lineas = inputText.split('\n');
+      
+      const arrLetra = [];
+      const arrAcordes = [];
+
+      const chordRegex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
+
+      lineas.forEach(linea => {
+        const lineaLimpia = linea.trim();
+        
+        if (lineaLimpia === '') {
+          arrLetra.push('');
+          arrAcordes.push('');
+          return;
+        }
+
+        const textoSinAcordes = linea.replace(chordRegex, '').replace(/\s+/g, '');
+        const longitudOriginalSinEspacios = linea.replace(/\s+/g, '').length;
+        // La regla del 30% para saber si la línea es de acordes
+        const esLineaDeAcordes = textoSinAcordes.length < (longitudOriginalSinEspacios * 0.3);
+
+        if (esLineaDeAcordes) {
+          arrLetra.push(''); // Dejamos hueco en la letra
+          arrAcordes.push(getTransportedText(linea)); // Extraemos y transponemos el acorde
+        } else {
+          arrLetra.push(linea); // Guardamos la letra
+          arrAcordes.push('');  // Dejamos hueco en los acordes
+        }
+      });
+
+      letraEl.value = arrLetra.join('\n');
+      acordesEl.value = arrAcordes.join('\n');
+    }
+  </script>
 </body>
 </html>
