@@ -130,73 +130,77 @@
   </div>
 
   <script>
-    // Se unificó todo en la escala cromática con sostenidos como base matemática
-    const cromaticasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
-    const cromaticasAmericanas = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
-    
-    // Diccionario para manejar bemoles (b) y pasarlos a la lógica de sostenidos
-    const flatToSharp = {
-      'reb': 'do#', 'mib': 're#', 'solb': 'fa#', 'lab': 'sol#', 'sib': 'la#',
-      'db': 'c#', 'eb': 'd#', 'gb': 'f#', 'ab': 'g#', 'bb': 'a#'
-    };
+  // Se unificó todo en la escala cromática con sostenidos como base matemática
+  const cromaticasLatinas = ['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
+  const cromaticasAmericanas = ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+  
+  // Diccionario para manejar bemoles (b) y pasarlos a la lógica de sostenidos
+  const flatToSharp = {
+    'reb': 'do#', 'mib': 're#', 'solb': 'fa#', 'lab': 'sol#', 'sib': 'la#',
+    'db': 'c#', 'eb': 'd#', 'gb': 'f#', 'ab': 'g#', 'bb': 'a#'
+  };
 
-    let step = 0;
-    const inputEl = document.getElementById('input');
-    const resultEl = document.getElementById('result');
-    const stepDisplay = document.getElementById('step-display');
+  let step = 0;
+  const inputEl = document.getElementById('input');
+  const resultEl = document.getElementById('result');
+  const stepDisplay = document.getElementById('step-display');
 
-    // Reactividad: Escucha los cambios en el teclado automáticamente
-    inputEl.addEventListener('input', transport);
+  inputEl.addEventListener('input', transport);
 
-    function change(delta) {
-      step += delta;
-      const sign = step > 0 ? '+' : '';
-      stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
-      transport(); // Se actualiza solo al tocar los botones
-    }
+  function change(delta) {
+    step += delta;
+    const sign = step > 0 ? '+' : '';
+    stepDisplay.textContent = `${sign}${step} semitono${Math.abs(step) !== 1 ? 's' : ''}`;
+    transport();
+  }
 
-    function transport() {
-      resultEl.value = getTransportedText(inputEl.value);
-    }
+  function transport() {
+    resultEl.value = getTransportedText(inputEl.value);
+  }
 
-    function getTransportedText(inputText) {
-      // Regex mejorada: Soporta sostenidos (#) y bemoles (b)
-      const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
+  function getTransportedText(inputText) {
+    // La regex ahora agrupa específicamente la "nota pura" (sin # o b) en los grupos 2 y 6
+    const regex = /\b((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?)([^ \n\r\t/()]*)(\/((do|re|mi|fa|sol|la|si|c|d|e|f|g|a|b)[#b]?))?(\([^\)]*\))?/gi;
 
-      return inputText.replace(regex, (match, base, _, sufijo, slash, bajo, __, paren) => {
-        function transp(nota) {
-          if (!nota) return '';
-          
-          let notaMin = nota.toLowerCase();
-          // Convertir bemol a sostenido para el cálculo si existe
-          if (flatToSharp[notaMin]) {
-            notaMin = flatToSharp[notaMin];
-          }
-
-          const isLatina = /^(do|re|mi|fa|sol|la|si)/.test(notaMin);
-          const lista = isLatina ? cromaticasLatinas : cromaticasAmericanas;
-          
-          const i = lista.indexOf(notaMin);
-          if (i === -1) return nota; // Fallback por si acaso
-
-          // Fórmula matemática robusta para evitar índices negativos
-          const newIndex = (((i + step) % 12) + 12) % 12;
-          let resultado = lista[newIndex];
-
-          // Respetar la capitalización original del usuario (Mayúsculas, Minúsculas, o Título)
-          if (nota === nota.toUpperCase()) {
-            return resultado.toUpperCase();
-          } else if (nota[0] === nota[0].toUpperCase()) {
-            return resultado.charAt(0).toUpperCase() + resultado.slice(1);
-          }
-          return resultado;
+    // Usamos los grupos capturados para aislar exactamente qué capitalizó el usuario
+    return inputText.replace(regex, (match, base, notaPura, sufijo, slashGroup, bajo, bajoPura, paren) => {
+      
+      function transp(nota, pura) {
+        if (!nota) return '';
+        
+        let notaMin = nota.toLowerCase();
+        if (flatToSharp[notaMin]) {
+          notaMin = flatToSharp[notaMin];
         }
 
-        const acordeTransp = transp(base) + (sufijo || '');
-        const bajoTransp = slash ? '/' + transp(bajo) : '';
-        return acordeTransp + bajoTransp + (paren || '');
-      });
-    }
-  </script>
+        const isLatina = /^(do|re|mi|fa|sol|la|si)/.test(notaMin);
+        const lista = isLatina ? cromaticasLatinas : cromaticasAmericanas;
+        
+        const i = lista.indexOf(notaMin);
+        if (i === -1) return nota; 
+
+        // Cálculo matemático a prueba de números negativos
+        const newIndex = (((i + step) % 12) + 12) % 12;
+        let resultado = lista[newIndex];
+
+        // LÓGICA EXACTA DE CAPITALIZACIÓN BASADA EN LA NOTA PURA
+        const esMayusculaCerrada = pura === pura.toUpperCase();
+        const esTipoTitulo = pura[0] === pura[0].toUpperCase();
+
+        if (esMayusculaCerrada) {
+          return resultado.toUpperCase(); // Ej: DO -> RE, SIB -> LA#
+        } else if (esTipoTitulo) {
+          return resultado.charAt(0).toUpperCase() + resultado.slice(1); // Ej: Do -> Re, Sib -> La#
+        }
+        return resultado; // Ej: do -> re
+      }
+
+      // El sufijo (m, maj7, dim, etc) se añade intacto al final del cálculo
+      const acordeTransp = transp(base, notaPura) + (sufijo || '');
+      const bajoTransp = slashGroup ? '/' + transp(bajo, bajoPura) : '';
+      return acordeTransp + bajoTransp + (paren || '');
+    });
+  }
+</script>
 </body>
 </html>
